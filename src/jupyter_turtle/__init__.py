@@ -1,4 +1,5 @@
 import contextlib
+import math
 from typing import Sequence, Tuple, Union
 
 from IPython.display import display
@@ -19,14 +20,15 @@ def _check_turtle():
             "jumps": 0,
             "strokes": 0,
             "turns": 0,
+            "distance": 0,
             "words": [],
-            "_last_down": 0,
+            "_in_stroke": False,
         }
         display(_turtle)
     return _turtle
 
 
-def clear():
+def clear() -> None:
     """Clear the canvas."""
     tu = _check_turtle()
     _turtle.stats = {
@@ -34,20 +36,26 @@ def clear():
         "jumps": 0,
         "strokes": 0,
         "turns": 0,
+        "distance": 0,
         "words": [],
-        "_last_down": 0,
+        "_in_stroke": False,
     }
     tu.clear()
 
 
-def move(distance: float):
+def move(distance: float) -> None:
     """Move the turtle by distance pixels."""
     tu = _check_turtle()
     tu.stats["moves"] += 1
+    if tu._pendown:
+        tu.stats["distance"] += abs(distance)
+        if not tu.stats["_in_stroke"]:
+            tu.stats["strokes"] += 1
+            tu.stats["_in_stroke"] += True
     tu.move(distance)
 
 
-def turn(degrees: float):
+def turn(degrees: float) -> None:
     """Turn the pen by degrees. Positive numbers turn left, negative numbers
     turn right."""
     tu = _check_turtle()
@@ -55,28 +63,26 @@ def turn(degrees: float):
     tu.turn(degrees)
 
 
-def pen_up():
+def pen_up() -> None:
     """Pick the pen up. Movements won't make lines."""
     tu = _check_turtle()
-    if tu.stats["moves"] > tu.stats["_last_down"]:
-        tu.stats["strokes"] += 1
+    tu.stats["_in_stroke"] = False
     tu.pen_up()
 
 
-def pen_down():
+def pen_down() -> None:
     """Put the pen down. Movements will make lines."""
     tu = _check_turtle()
-    tu.stats["_last_down"] = tu.stats["moves"]
     tu.pen_down()
 
 
-def show_turtle():
+def show_turtle() -> None:
     """Show the turtle in the scene."""
     tu = _check_turtle()
     tu.show()
 
 
-def hide_turtle():
+def hide_turtle() -> None:
     """Hide the turtle in the scene."""
     tu = _check_turtle()
     tu.hide()
@@ -84,7 +90,7 @@ def hide_turtle():
 
 def write(
     text: str, font: str = "24px sans-serif", text_align: str = "center"
-):
+) -> None:
     """Write text.
 
     Arguments:
@@ -98,40 +104,46 @@ def write(
     tu.write(text, font, text_align)
 
 
-def goto(*place: Union[Tuple[int, int], Sequence[int], DimPoint]):
+def goto(x: int, y: int) -> None:
     """Jump to a point"""
     tu = _check_turtle()
     tu.stats["moves"] += 1
     tu.stats["jumps"] += 1
-    tu.pos = place
+    if tu._pendown:
+        distance = math.sqrt((tu.pos[0] - x) ** 2 + (tu.pos[1] - y) ** 2)
+        tu.stats["distance"] += distance
+        if not tu.stats["_in_stroke"]:
+            tu.stats["strokes"] += 1
+            tu.stats["_in_stroke"] += True
+    tu.pos = (x, y)
 
 
-def set_background(filename: str):
+def set_background(filename: str) -> None:
     """Set the background image"""
     tu = _check_turtle()
     tu.background(filename)
 
 
-def set_heading(heading: float):
+def set_heading(heading: float) -> None:
     """Set the pen to face heading in degrees."""
     tu = _check_turtle()
     tu.stats["turns"] += 1
     tu.heading = heading
 
 
-def set_color(color: Union[str, int]):
+def set_color(color: Union[str, int]) -> None:
     """Set the pen color using HTML color notation."""
     tu = _check_turtle()
     tu.color = color
 
 
-def set_width(width: int):
+def set_width(width: int) -> None:
     """Set the line thickness."""
     tu = _check_turtle()
     tu.width = width
 
 
-def set_size(width: int, height: int):
+def set_size(width: int, height: int) -> None:
     """Set the size of the arena."""
     tu = _check_turtle()
     tu.size = (width, height)
@@ -191,9 +203,6 @@ def post_run_cell(result):
     """
     global _turtle
     result.turtle = _turtle
-    if _turtle is not None:
-        if _turtle.stats["moves"] > _turtle.stats["_last_down"]:
-            _turtle.stats["strokes"] += 1
 
 
 def load_ipython_extension(ipython):
