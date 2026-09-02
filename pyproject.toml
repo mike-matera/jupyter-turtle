@@ -6,7 +6,7 @@ authors = [
 description = "Simplified Turtle graphics for the Jupyter Notebook"
 readme = "README.md"
 requires-python = ">=3.9"
-version = "1.0.3"
+version = "1.0.4"
 classifiers = [
     "Programming Language :: Python :: 3",
     "Operating System :: OS Independent",
@@ -15,8 +15,9 @@ license = "MIT"
 license-files = ["LICEN[CS]E*"]
 
 dependencies = [
-    "ipycanvas",
-    "jupyterlab",
+    "ipycanvas>=v0.13.3",
+    "jupyterlab>=v4.4.3",
+    "ipykernel>=6.29.5,<7.0",
 ]
 
 [project.urls]
