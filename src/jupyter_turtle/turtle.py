@@ -39,7 +39,7 @@ class Turtle:
             n_canvases=3,
             width=self._size.x,
             height=self._size.y,
-            sync_image_data=True,
+            sync_image_data=False,
             **kwargs,
         )
 
